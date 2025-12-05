@@ -11,39 +11,90 @@ void abs_limit(float *a, float ABS_MAX){
     if(*a < -ABS_MAX)
         *a = -ABS_MAX;
 }
-void SetPWM(int pwm) 
+void SetPWM(int pwm,int i) 
 {
-    if (pwm >= 0) {
+    if (pwm >= 0) 
+			{
         // 正转
-        HAL_GPIO_WritePin(GPIOE, GPIO_PIN_13, GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(GPIOE, GPIO_PIN_14, GPIO_PIN_SET);
-			  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET);
-		    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);
-				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET);
-			  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_RESET);
-				HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_SET);
-    } else {
+			  switch(i)
+				{
+					case(0):
+          HAL_GPIO_WritePin(GPIOE, GPIO_PIN_13, GPIO_PIN_RESET);
+          HAL_GPIO_WritePin(GPIOE, GPIO_PIN_14, GPIO_PIN_SET);
+					break;
+					case(1):
+			    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_RESET);
+          HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET);
+					break;
+					case(2):
+					HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);
+					HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET);
+					break;
+					case(3):
+					HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_RESET);
+					HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_SET);
+					break;
+				}
+       } 
+		else 
+			{
         // 反转
-			  HAL_GPIO_WritePin(GPIOE, GPIO_PIN_14, GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(GPIOE, GPIO_PIN_13, GPIO_PIN_SET);
-			  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_SET);
-		    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET);
-				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET);
-			  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_RESET);
-				HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_SET);
-        pwm = -pwm; // 取绝对值
-    }
-    __HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_1, pwm); // 设置PWM值
+			  switch(i)
+				{
+					case(0):
+					HAL_GPIO_WritePin(GPIOE, GPIO_PIN_14, GPIO_PIN_RESET);
+					HAL_GPIO_WritePin(GPIOE, GPIO_PIN_13, GPIO_PIN_SET);
+					pwm = -pwm;
+					break;
+					case(1):
+					HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_RESET);
+					HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_SET);
+					pwm = -pwm;
+					break;
+					case(2):
+					HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET);
+					HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET);
+					pwm = -pwm;
+					break;
+					case(3):
+					HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_RESET);
+					HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_SET);
+          pwm = -pwm; // 取绝对值
+					break;
+				}
+      }
+			switch(i)
+			{
+				case(0):
+        __HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_1, pwm); // 设置PWM值
+				break;
+        case(1):
+        __HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_2, pwm);
+				break;
+				case(2):
+        __HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_3, pwm);
+				break;
+				case(3):
+        __HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_4, pwm);
+				break;
+			}
 }
 
 void pid_init(void)
 {
-			for(int i=0; i<4; i++)
+			for(int i=0; i<2; i++)
     {
-		PID_struct_init(&pid_spd[i], POSITION_PID, 1000, 1000,
-									10.0f,	3.0f,0.01f);  //4 motos angular rate closeloop.
+		  PID_struct_init(&pid_spd[i], POSITION_PID, 1000, 1000,
+									10.0f,	15.0f,0.01f);  //2 motos angular rate closeloop.			
+			pid_spd[i].encoder.last_encoder=pid_spd[i].encoder.get_encoder=0;
+			pid_spd[i].control_speed=0;
+		}
+			for(int i=2; i<4; i++)
+    {
+		  PID_struct_init(&pid_spd[i], POSITION_PID, 1000, 1000,
+									10.0f,	20.0f,0.01f);  //2 motos angular rate closeloop.			
+			pid_spd[i].encoder.last_encoder=pid_spd[i].encoder.get_encoder=0;
+			pid_spd[i].control_speed=0;
 		}
 }
 

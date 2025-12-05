@@ -3,7 +3,7 @@
 
 #include "mytype.h"
 
-void SetPWM(int pwm);
+void SetPWM(int pwm,int i);
 void pid_init(void);
 
 enum{
@@ -14,6 +14,13 @@ enum{
     POSITION_PID,
     DELTA_PID,
 };
+
+typedef struct{
+	float get_encoder;
+	float last_encoder;
+	float delta_encoder;
+}encoder_t;
+
 typedef struct __pid_t
 {
     float p;
@@ -40,6 +47,9 @@ typedef struct __pid_t
     uint32_t pid_mode;
     uint32_t MaxOutput;				//输出限幅
     uint32_t IntegralLimit;		//积分限幅
+		
+		encoder_t encoder;   //编码器值
+		float control_speed; //底盘解算设定值
     
     void (*f_param_init)(struct __pid_t *pid,  //PID参数初始化
                     uint32_t pid_mode,

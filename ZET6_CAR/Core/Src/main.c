@@ -48,20 +48,17 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-typedef struct{
-	float get_encoder;
-	float last_encoder;
-	float delta_encoder;
-}encoder_t;
-encoder_t encoder[4];
 uint8_t RX_data[32]={0};
+//uint8_t RX_data[8]={0};
 //int not_exist_flag = 0;
 int get_sta,i=0;
-int turn=0,test=0;
-float speed,set_speed=3.0;
+int turn=0,test=500;
+float speed[4]={0},Vx,Vy;//set_speed[4]={-3.0,3.0,-3.0,3.0}
 uint8_t tail[4]={0x00,0x00,0x80,0x7f};
-float data[2];
-float circle=850.0;
+float data[4];
+float circle_0_1=836.0;//11*4*19
+float circle_2_3=1560.0;//13*4*30
+uint16_t get_data[4];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -76,51 +73,61 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if(htim->Instance==TIM5)
 	{
-//		  SetPWM(5000);
-//			encoder[0].last_encoder=encoder[0].get_encoder;
-//			encoder[0].get_encoder=Read_Encoder(&htim1);
-//			encoder[0].delta_encoder=encoder[0].get_encoder-encoder[0].last_encoder;
-//		  speed=encoder[0].delta_encoder/(0.01*circle);
-//		if(encoder[0].get_encoder>60000)
-//		{
-//			encoder[0].last_encoder=encoder[0].get_encoder=0;
-//			__HAL_TIM_SET_COUNTER(&htim1,0);
-//			__HAL_TIM_SET_COUNTER(&htim2,0);
-//			__HAL_TIM_SET_COUNTER(&htim3,0);
-//			__HAL_TIM_SET_COUNTER(&htim4,0);
-//		}
-			encoder[0].last_encoder=encoder[0].get_encoder;
-			encoder[0].get_encoder=Read_Encoder(&htim1);
-			encoder[0].delta_encoder=encoder[0].get_encoder-encoder[0].last_encoder;
+      get_data[0] = (RX_data[0]<<8)+RX_data[1];//
+		  get_data[1] = (RX_data[2]<<8)+RX_data[3];//
+		  get_data[2] = (RX_data[4]<<8)+RX_data[5];//
+		  get_data[3] = (RX_data[6]<<8)+RX_data[7];//
+      Vx=count_data(get_data[2]);
+		  Vy=count_data(get_data[3]);
+  		Chassis_Solution(&pid_spd[0],&pid_spd[1],&pid_spd[2],&pid_spd[3],Vx,Vy,0);
 		
-			encoder[1].last_encoder=encoder[1].get_encoder;
-			encoder[1].get_encoder=Read_Encoder(&htim2);
-			encoder[1].delta_encoder=encoder[1].get_encoder-encoder[1].last_encoder;
+			pid_spd[0].encoder.last_encoder=pid_spd[0].encoder.get_encoder;
+			pid_spd[0].encoder.get_encoder=Read_Encoder(&htim1);
+			pid_spd[0].encoder.delta_encoder=pid_spd[0].encoder.get_encoder-pid_spd[0].encoder.last_encoder;
 		
-			encoder[2].last_encoder=encoder[2].get_encoder;
-			encoder[2].get_encoder=Read_Encoder(&htim3);
-			encoder[2].delta_encoder=encoder[2].get_encoder-encoder[2].last_encoder;
+			pid_spd[1].encoder.last_encoder=pid_spd[1].encoder.get_encoder;
+			pid_spd[1].encoder.get_encoder=Read_Encoder(&htim2);
+			pid_spd[1].encoder.delta_encoder=pid_spd[1].encoder.get_encoder-pid_spd[1].encoder.last_encoder;
 		
-			encoder[3].last_encoder=encoder[3].get_encoder;
-			encoder[3].get_encoder=Read_Encoder(&htim4);
-			encoder[3].delta_encoder=encoder[3].get_encoder-encoder[3].last_encoder;
-		  if(encoder[0].get_encoder>60000)
-			{
-				encoder[0].last_encoder=encoder[0].get_encoder=0;
-				__HAL_TIM_SET_COUNTER(&htim1,0);
-				__HAL_TIM_SET_COUNTER(&htim2,0);
-				__HAL_TIM_SET_COUNTER(&htim3,0);
-				__HAL_TIM_SET_COUNTER(&htim4,0);
-			}
+  		pid_spd[2].encoder.last_encoder=pid_spd[2].encoder.get_encoder;
+			pid_spd[2].encoder.get_encoder=Read_Encoder(&htim3);
+			pid_spd[2].encoder.delta_encoder=pid_spd[2].encoder.get_encoder-pid_spd[2].encoder.last_encoder;
+		
+			pid_spd[3].encoder.last_encoder=pid_spd[3].encoder.get_encoder;
+			pid_spd[3].encoder.get_encoder=Read_Encoder(&htim4);
+			pid_spd[3].encoder.delta_encoder=pid_spd[3].encoder.get_encoder-pid_spd[3].encoder.last_encoder;
+
+			for(i=0;i<4;i++)
+		  {
+				if((pid_spd[i].control_speed>0)&&(pid_spd[i].encoder.get_encoder>60000))
+				{
+					Clear_Encoder(i);
+					pid_spd[i].encoder.last_encoder=pid_spd[i].encoder.get_encoder=0;
+				}
+				else if((pid_spd[i].control_speed<0)&&(pid_spd[i].encoder.get_encoder<5000))
+				{
+					Set_Encoder(i);
+				  pid_spd[i].encoder.last_encoder=pid_spd[i].encoder.get_encoder=65535;
+				}
+		  }
+
 			for(i=0;i<4;i++)
 			{
-				 speed=encoder[0].delta_encoder/(0.01*circle);//1152*4
-				 speed_control(&pid_spd[0],speed,set_speed);
+//				   speed[i]=pid_spd[i].encoder.delta_encoder/(0.01*circle);
+//   				 speed_control(&pid_spd[i],speed[i],pid_spd[i].control_speed,i);
+				  if((i==0)||(i==1))
+  				 speed[i]=pid_spd[i].encoder.delta_encoder/(0.01*circle_0_1);
+					else if((i==2)||(i==3))
+					 speed[i]=pid_spd[i].encoder.delta_encoder/(0.01*circle_2_3);
+   				 speed_control(&pid_spd[i],speed[i],pid_spd[i].control_speed,i);
 			}
-      data[0]=speed;
-      data[1]=set_speed;
-			HAL_UART_Transmit(&huart1,(uint8_t*)data,2*sizeof(float),100);
-		  HAL_UART_Transmit(&huart1,tail,4*sizeof(uint8_t),100);
+
+//      data[0]=speed[0];
+//      data[1]=speed[1];
+//			data[0]=speed[2];
+//      data[1]=speed[3];
+//			HAL_UART_Transmit(&huart1,(uint8_t*)data,4*sizeof(float),100);
+//		  HAL_UART_Transmit(&huart1,tail,4*sizeof(uint8_t),100);
     }
 }
 /* USER CODE END 0 */
@@ -163,16 +170,9 @@ int main(void)
   MX_TIM5_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-	 pid_init();
+   pid_init();
 	 MotorEncoder_Init();
-//  while(NRF24L01_Check())
-//  {
-//	not_exist_flag = 1;
-//	HAL_Delay(1000);
-//  }
-  //NRF24L01_Check();
-    NRF24L01_RX_Mode();
-		
+   NRF24L01_RX_Mode();		
 
   /* USER CODE END 2 */
 
@@ -183,7 +183,8 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-//		get_sta=NRF24L01_RxPacket(RX_data);
+		get_sta=NRF24L01_RxPacket(RX_data);
+//		HAL_UART_Receive(&huart1,RX_data,8*sizeof(uint8_t),100);
 //		SetPWM(5000);
 //		i=Read_Encoder(&htim1);
   }

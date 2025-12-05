@@ -1,6 +1,9 @@
 #include "encoder.h"
 #include "tim.h"
 #include "Motor.h"
+#include "math.h"
+
+extern uint16_t get_data[4];
 
 void MotorEncoder_Init(void)
 {
@@ -48,16 +51,96 @@ int Read_Encoder(TIM_HandleTypeDef *htim)
     return Encoder_TIM;
 }
 
-void speed_control(pid_t* pid,float get,float set)
+void speed_control(pid_t* pid,float get,float set,int i)
 {
 	pid_calc(pid,get,set);
-	SetPWM(pid->pos_out);
+	SetPWM(pid->pos_out,i);
 }
 
-void Clear_Encoder(void)
+void Clear_Encoder(int i)
 {
+	switch(i)
+	{
+		case 0:
 	__HAL_TIM_SET_COUNTER(&htim1,0);
+		break;
+		case 1:
 	__HAL_TIM_SET_COUNTER(&htim2,0);
+		break;
+		case 2:
 	__HAL_TIM_SET_COUNTER(&htim3,0);
+		break;
+		case 3:
 	__HAL_TIM_SET_COUNTER(&htim4,0);
+	}
+}
+
+void Set_Encoder(int i)
+{
+		switch(i)
+	{
+		case 0:
+	__HAL_TIM_SET_COUNTER(&htim1,65535);
+		break;
+		case 1:
+	__HAL_TIM_SET_COUNTER(&htim2,65535);
+		break;
+		case 2:
+	__HAL_TIM_SET_COUNTER(&htim3,65535);
+		break;
+		case 3:
+	__HAL_TIM_SET_COUNTER(&htim4,65535);
+	}
+}
+
+void Chassis_Solution(pid_t* pid1,pid_t* pid2,pid_t* pid3,pid_t* pid4,float Vx,float Vy,float angle)
+{
+	//float R=; //
+	float x=PI/4;
+	float k=0.2;
+	pid1->control_speed=(-1)*Vx*cosf(x)+(-1)*Vy*cosf(x)+angle*k;
+	pid2->control_speed=(-1)*Vx*cosf(x)+Vy*cosf(x)+angle*k;
+	pid3->control_speed=     Vx*cosf(x)+(-1)*Vy*cosf(x)+angle*k;
+	pid4->control_speed=     Vx*cosf(x)+     Vy*cosf(x)+angle*k;
+	if(pid1->control_speed>2.6)
+		pid1->control_speed=2.6;
+	if(pid1->control_speed<-2.6)
+		pid1->control_speed=-2.6;
+	
+	if(pid2->control_speed>2.6)
+		pid2->control_speed=2.6;
+	if(pid2->control_speed<-2.6)
+		pid2->control_speed=-2.6;
+	
+	if(pid3->control_speed>2.6)
+		pid3->control_speed=2.6;
+	if(pid3->control_speed<-2.6)
+		pid3->control_speed=-2.6;
+	
+	if(pid4->control_speed>2.6)
+		pid4->control_speed=2.6;
+	if(pid4->control_speed<-2.6)
+		pid4->control_speed=-2.6;
+}
+
+float count_speed=2000;
+float count_data(int data)
+{
+	if((data>1900)&&(data<2200))
+		count_speed=0;
+	else if(data>2400)
+	{
+		if(data>4000)
+			count_speed=4;
+		else
+		  count_speed=(data-2400)/400;
+	}
+	else if(data<1600)
+	{
+		if(data<100)
+			count_speed=-4;
+		else
+			count_speed=(data-1600)/400;
+	}
+  return count_speed*0.75;
 }

@@ -225,7 +225,7 @@ void NRF24L01_TX_Mode(void)
 
     NRF24L01_Write_Reg(NRF_WRITE_REG + EN_AA, 0x01);      //使能通道0的自动应答
     NRF24L01_Write_Reg(NRF_WRITE_REG + EN_RXADDR, 0x01);  //使能通道0的接收地址
-    NRF24L01_Write_Reg(NRF_WRITE_REG + SETUP_RETR, 0x1a); //设置自动重发间隔时间:4000us + 86us;最大自动重发次数:15次
+    NRF24L01_Write_Reg(NRF_WRITE_REG + SETUP_RETR, 0x1a); //设置自动重发间隔时间:580us;最大自动重发次数:10次
 		NRF24L01_Write_Reg(NRF_WRITE_REG+RX_PW_P0,RX_PLOAD_WIDTH);//配置接收通道0接收的数据宽度32字节
     NRF24L01_Write_Reg(NRF_WRITE_REG + RF_CH, 80);        //设置RF通道为80
     NRF24L01_Write_Reg(NRF_WRITE_REG + RF_SETUP, 0x0E);   //设置TX发射参数,0db增益,2Mbps,低噪声增益开启
