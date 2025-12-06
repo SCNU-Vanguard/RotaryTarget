@@ -55,9 +55,6 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(CE_GPIO_Port, CE_Pin, GPIO_PIN_SET);
-
-  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, TIM3_0_Pin|TIM3_1_Pin|TIM2_0_Pin|TIM2_1_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
@@ -72,19 +69,6 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(CS_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : CE_Pin */
-  GPIO_InitStruct.Pin = CE_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-  HAL_GPIO_Init(CE_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : IRQ_Pin */
-  GPIO_InitStruct.Pin = IRQ_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(IRQ_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : TIM3_0_Pin TIM3_1_Pin TIM2_0_Pin TIM2_1_Pin */
   GPIO_InitStruct.Pin = TIM3_0_Pin|TIM3_1_Pin|TIM2_0_Pin|TIM2_1_Pin;

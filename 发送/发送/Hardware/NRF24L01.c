@@ -181,14 +181,14 @@ uint8_t Send(uint8_t* Buf,int i)
 		W_Buf(W_REGISTER+TX_ADDR, T_ADDR_0, 5);//配置发送地址
 	  W_Buf(W_REGISTER+RX_ADDR_P0, R_ADDR_0, 5);//配置接收通道0--zet6
 		W_Reg(W_REGISTER+RF_CH,80);
-	  W_Buf(W_TX_PAYLOAD, Buf, 32);//在发送数据缓存器发送要发送的数据
+	  W_Buf(W_TX_PAYLOAD, Buf, 8);//在发送数据缓存器发送要发送的数据
 	}
 	else if(i==1)
 	{
 		W_Buf(W_REGISTER+TX_ADDR, T_ADDR_1, 5);//配置发送地址
 	  W_Buf(W_REGISTER+RX_ADDR_P0, R_ADDR_1, 5);//配置接收通道1--c8t6
 		W_Reg(W_REGISTER+RF_CH,70);//通信频率
-	  W_Buf(W_TX_PAYLOAD, Buf, 32);//在发送数据缓存器发送要发送的数据
+	  W_Buf(W_TX_PAYLOAD, Buf, 8);//在发送数据缓存器发送要发送的数据
 	}
 	W_CE(1);  
   Delay_us(10);

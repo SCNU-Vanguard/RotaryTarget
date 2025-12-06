@@ -48,7 +48,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-uint8_t RX_data[32]={0};
+uint8_t RX_data[8]={0x08, 0x00, 0x00, 0x00, 0x08, 0x00, 0x08, 0x00};
 //uint8_t RX_data[8]={0};
 //int not_exist_flag = 0;
 int get_sta=1,i=0;
@@ -70,17 +70,23 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+	if (huart->Instance == USART2)
+	{
+		HAL_UART_Receive_IT(&huart2, RX_data, 8);
+	}
+}
+
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if(htim->Instance==TIM5)
 	{
-		if(start_error==1)
-		{
-          get_data[0] = (RX_data[0]<<8)+RX_data[1];//
-		  get_data[1] = (RX_data[2]<<8)+RX_data[3];//
-		  get_data[2] = (RX_data[4]<<8)+RX_data[5];//
-		  get_data[3] = (RX_data[6]<<8)+RX_data[7];//
-		}
+	  get_data[0] = (RX_data[0]<<8)+RX_data[1];//
+	  get_data[1] = (RX_data[2]<<8)+RX_data[3];//
+	  get_data[2] = (RX_data[4]<<8)+RX_data[5];//
+	  get_data[3] = (RX_data[6]<<8)+RX_data[7];//
+		
       Vx=count_data(get_data[2]);
 		  Vy=count_data(get_data[3]);
   		Chassis_Solution(&pid_spd[0],&pid_spd[1],&pid_spd[2],&pid_spd[3],Vx,Vy,0);
@@ -173,11 +179,14 @@ int main(void)
   MX_TIM8_Init();
   MX_TIM5_Init();
   MX_USART1_UART_Init();
+  MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-   pid_init();
-	 MotorEncoder_Init();
-	NRF24L01_RX_Mode();		
-	Data_init();
+  HAL_UART_Receive_IT(&huart2, RX_data, 8);
+	
+	pid_init();
+	MotorEncoder_Init();
+//	NRF24L01_RX_Mode();		
+//	Data_init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -187,12 +196,13 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-		get_sta=NRF24L01_RxPacket(RX_data);
-	    if(get_sta==0)
-			start_error=1;
+//		get_sta=NRF24L01_RxPacket(RX_data);
+//	    if(get_sta==0)
+//			start_error=1;
 //		HAL_UART_Receive(&huart1,RX_data,8*sizeof(uint8_t),100);
 //		SetPWM(5000);
 //		i=Read_Encoder(&htim1);
+//	  HAL_UART_Receive_IT(&huart2, RX_data, 8);
   }
   /* USER CODE END 3 */
 }
