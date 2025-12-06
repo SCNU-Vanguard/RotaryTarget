@@ -117,19 +117,19 @@ void data_get()
 
 void Set_G80_Speed()
 {
-	if(get_data[0] > 4000 || get_data[0] < 100)
+	if(get_data[0] < 100)
 	{
 		SpeedTarget = 800;
 	}
-	else if(get_data[1] < 100)
+	else if(get_data[0] > 4000 && get_data[1] < 100)
 	{
 		SpeedTarget = 0;
 	}
-	else if(get_data[1] > 4000)
+	else if(get_data[0] > 4000 && get_data[1] > 4000)
 	{
 		SpeedTarget = 1200;
 	}
-	else
+	else if(get_data[0] > 4000)
 	{
 		SpeedTarget = get_data[1] / 3900.0 * 400 + 801;
 	}

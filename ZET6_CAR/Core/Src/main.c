@@ -51,7 +51,7 @@
 uint8_t RX_data[32]={0};
 //uint8_t RX_data[8]={0};
 //int not_exist_flag = 0;
-int get_sta,i=0;
+int get_sta=1,i=0;
 int turn=0,test=500;
 float speed[4]={0},Vx,Vy;//set_speed[4]={-3.0,3.0,-3.0,3.0}
 uint8_t tail[4]={0x00,0x00,0x80,0x7f};
@@ -59,6 +59,7 @@ float data[4];
 float circle_0_1=836.0;//11*4*19
 float circle_2_3=1560.0;//13*4*30
 uint16_t get_data[4];
+int start_error=0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -73,10 +74,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if(htim->Instance==TIM5)
 	{
-      get_data[0] = (RX_data[0]<<8)+RX_data[1];//
+		if(start_error==1)
+		{
+          get_data[0] = (RX_data[0]<<8)+RX_data[1];//
 		  get_data[1] = (RX_data[2]<<8)+RX_data[3];//
 		  get_data[2] = (RX_data[4]<<8)+RX_data[5];//
 		  get_data[3] = (RX_data[6]<<8)+RX_data[7];//
+		}
       Vx=count_data(get_data[2]);
 		  Vy=count_data(get_data[3]);
   		Chassis_Solution(&pid_spd[0],&pid_spd[1],&pid_spd[2],&pid_spd[3],Vx,Vy,0);
@@ -172,8 +176,8 @@ int main(void)
   /* USER CODE BEGIN 2 */
    pid_init();
 	 MotorEncoder_Init();
-   NRF24L01_RX_Mode();		
-
+	NRF24L01_RX_Mode();		
+	Data_init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -184,6 +188,8 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 		get_sta=NRF24L01_RxPacket(RX_data);
+	    if(get_sta==0)
+			start_error=1;
 //		HAL_UART_Receive(&huart1,RX_data,8*sizeof(uint8_t),100);
 //		SetPWM(5000);
 //		i=Read_Encoder(&htim1);

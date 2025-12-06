@@ -13,5 +13,6 @@ void Clear_Encoder(int i);
 void Set_Encoder(int i);
 void Chassis_Solution(pid_t* pid1,pid_t* pid2,pid_t* pid3,pid_t* pid4,float Vx,float Vy,float angle);
 float count_data(int data);	
+void Data_init(void);
 	
 #endif

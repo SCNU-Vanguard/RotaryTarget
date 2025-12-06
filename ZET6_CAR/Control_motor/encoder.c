@@ -45,6 +45,14 @@ void MotorEncoder_Init(void)
 		HAL_TIM_PWM_Start(&htim8,TIM_CHANNEL_4);
 }
 
+void Data_init(void)
+{
+	  get_data[0] = 2048;//
+	  get_data[1] = 0;//
+	  get_data[2] = 2048;//
+	  get_data[3] = 2048;//
+}
+
 int Read_Encoder(TIM_HandleTypeDef *htim)
 {
     int Encoder_TIM = __HAL_TIM_GET_COUNTER(htim);
@@ -142,5 +150,5 @@ float count_data(int data)
 		else
 			count_speed=(data-1600)/400;
 	}
-  return count_speed*0.75;
+  return count_speed*0.5;
 }
