@@ -48,18 +48,16 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-uint8_t RX_data[8]={0x08, 0x00, 0x00, 0x00, 0x08, 0x00, 0x08, 0x00};
-//uint8_t RX_data[8]={0};
+uint8_t RX_data[8]={0x08,0x00,0x00,0x00,0x08,0x00,0x08,0x00};
 //int not_exist_flag = 0;
 int get_sta=1,i=0;
 int turn=0,test=500;
-float speed[4]={0},Vx,Vy;//set_speed[4]={-3.0,3.0,-3.0,3.0}
+float speed[4]={0},Vx,Vy,Omega;//set_speed[4]={-3.0,3.0,-3.0,3.0}
 uint8_t tail[4]={0x00,0x00,0x80,0x7f};
 float data[4];
 float circle_0_1=836.0;//11*4*19
 float circle_2_3=1560.0;//13*4*30
 uint16_t get_data[4];
-int start_error=0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -72,72 +70,42 @@ void SystemClock_Config(void);
 /* USER CODE BEGIN 0 */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	if (huart->Instance == USART2)
-	{
-		HAL_UART_Receive_IT(&huart2, RX_data, 8);
-	}
+    if(huart->Instance == USART2)
+    {
+        HAL_UART_Receive_IT(&huart2, RX_data, 8);
+    }
 }
-
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if(htim->Instance==TIM5)
 	{
-	  get_data[0] = (RX_data[0]<<8)+RX_data[1];//
-	  get_data[1] = (RX_data[2]<<8)+RX_data[3];//
-	  get_data[2] = (RX_data[4]<<8)+RX_data[5];//
-	  get_data[3] = (RX_data[6]<<8)+RX_data[7];//
-		
+		  
+			get_data[0] = (RX_data[0]<<8)+RX_data[1];//
+			get_data[1] = (RX_data[2]<<8)+RX_data[3];//
+			get_data[2] = (RX_data[4]<<8)+RX_data[5];//
+			get_data[3] = (RX_data[6]<<8)+RX_data[7];//
       Vx=count_data(get_data[2]);
 		  Vy=count_data(get_data[3]);
-  		Chassis_Solution(&pid_spd[0],&pid_spd[1],&pid_spd[2],&pid_spd[3],Vx,Vy,0);
-		
-			pid_spd[0].encoder.last_encoder=pid_spd[0].encoder.get_encoder;
-			pid_spd[0].encoder.get_encoder=Read_Encoder(&htim1);
-			pid_spd[0].encoder.delta_encoder=pid_spd[0].encoder.get_encoder-pid_spd[0].encoder.last_encoder;
-		
-			pid_spd[1].encoder.last_encoder=pid_spd[1].encoder.get_encoder;
-			pid_spd[1].encoder.get_encoder=Read_Encoder(&htim2);
-			pid_spd[1].encoder.delta_encoder=pid_spd[1].encoder.get_encoder-pid_spd[1].encoder.last_encoder;
-		
-  		pid_spd[2].encoder.last_encoder=pid_spd[2].encoder.get_encoder;
-			pid_spd[2].encoder.get_encoder=Read_Encoder(&htim3);
-			pid_spd[2].encoder.delta_encoder=pid_spd[2].encoder.get_encoder-pid_spd[2].encoder.last_encoder;
-		
-			pid_spd[3].encoder.last_encoder=pid_spd[3].encoder.get_encoder;
-			pid_spd[3].encoder.get_encoder=Read_Encoder(&htim4);
-			pid_spd[3].encoder.delta_encoder=pid_spd[3].encoder.get_encoder-pid_spd[3].encoder.last_encoder;
-
-			for(i=0;i<4;i++)
-		  {
-				if((pid_spd[i].control_speed>0)&&(pid_spd[i].encoder.get_encoder>60000))
-				{
-					Clear_Encoder(i);
-					pid_spd[i].encoder.last_encoder=pid_spd[i].encoder.get_encoder=0;
-				}
-				else if((pid_spd[i].control_speed<0)&&(pid_spd[i].encoder.get_encoder<5000))
-				{
-					Set_Encoder(i);
-				  pid_spd[i].encoder.last_encoder=pid_spd[i].encoder.get_encoder=65535;
-				}
-		  }
-
-			for(i=0;i<4;i++)
-			{
+		  Omega=count_data(get_data[0]);
+  		Chassis_Solution(&pid_spd[0],&pid_spd[1],&pid_spd[2],&pid_spd[3],Vx,Vy,Omega);		
+        pid_spd[0].encoder.get_encoder=Read_Encoder(&htim1);
+				pid_spd[1].encoder.get_encoder=Read_Encoder(&htim2);
+				pid_spd[2].encoder.get_encoder=Read_Encoder(&htim3);
+				pid_spd[3].encoder.get_encoder=Read_Encoder(&htim4);
+   			for(i=0;i<4;i++)
+			  {
 //				   speed[i]=pid_spd[i].encoder.delta_encoder/(0.01*circle);
 //   				 speed_control(&pid_spd[i],speed[i],pid_spd[i].control_speed,i);
 				  if((i==0)||(i==1))
-  				 speed[i]=pid_spd[i].encoder.delta_encoder/(0.01*circle_0_1);
+  				 speed[i]=(pid_spd[i].encoder.get_encoder-35535)/(0.01*circle_0_1);
 					else if((i==2)||(i==3))
-					 speed[i]=pid_spd[i].encoder.delta_encoder/(0.01*circle_2_3);
-   				 speed_control(&pid_spd[i],speed[i],pid_spd[i].control_speed,i);
-			}
-
-//      data[0]=speed[0];
-//      data[1]=speed[1];
-//			data[0]=speed[2];
-//      data[1]=speed[3];
-//			HAL_UART_Transmit(&huart1,(uint8_t*)data,4*sizeof(float),100);
-//		  HAL_UART_Transmit(&huart1,tail,4*sizeof(uint8_t),100);
+					 speed[i]=(pid_spd[i].encoder.get_encoder-35535)/(0.01*circle_2_3);
+   				 speed_control(&pid_spd[i],speed[i],pid_spd[i].control_speed,i);					
+			  }
+				for(i=0;i<4;i++)
+			  {
+				 Set_Encoder(i);
+				}
     }
 }
 /* USER CODE END 0 */
@@ -156,7 +124,7 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+   HAL_Init();
 
   /* USER CODE BEGIN Init */
   
@@ -181,14 +149,11 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-  HAL_UART_Receive_IT(&huart2, RX_data, 8);
-	
-	pid_init();
-	MotorEncoder_Init();
-//	NRF24L01_RX_Mode();		
-//	Data_init();
+   pid_init();
+	 MotorEncoder_Init();
+   //NRF24L01_RX_Mode();		
+	 HAL_UART_Receive_IT(&huart2,RX_data,8);
   /* USER CODE END 2 */
-
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
@@ -196,13 +161,9 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-//		get_sta=NRF24L01_RxPacket(RX_data);
-//	    if(get_sta==0)
-//			start_error=1;
 //		HAL_UART_Receive(&huart1,RX_data,8*sizeof(uint8_t),100);
 //		SetPWM(5000);
 //		i=Read_Encoder(&htim1);
-//	  HAL_UART_Receive_IT(&huart2, RX_data, 8);
   }
   /* USER CODE END 3 */
 }

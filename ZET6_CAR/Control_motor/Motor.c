@@ -88,6 +88,7 @@ void pid_init(void)
 									10.0f,	15.0f,0.01f);  //2 motos angular rate closeloop.			
 			pid_spd[i].encoder.last_encoder=pid_spd[i].encoder.get_encoder=0;
 			pid_spd[i].control_speed=0;
+			pid_spd[i].max_err=1000;
 		}
 			for(int i=2; i<4; i++)
     {
@@ -95,6 +96,7 @@ void pid_init(void)
 									10.0f,	20.0f,0.01f);  //2 motos angular rate closeloop.			
 			pid_spd[i].encoder.last_encoder=pid_spd[i].encoder.get_encoder=0;
 			pid_spd[i].control_speed=0;
+			pid_spd[i].max_err=1000;
 		}
 }
 

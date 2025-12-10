@@ -47,10 +47,10 @@ void MotorEncoder_Init(void)
 
 void Data_init(void)
 {
-	  get_data[0] = 2048;//
-	  get_data[1] = 0;//
-	  get_data[2] = 2048;//
-	  get_data[3] = 2048;//
+		get_data[0] = 2048;
+		get_data[1] = 0;
+		get_data[2] = 2048;//
+		get_data[3] = 2048;//
 }
 
 int Read_Encoder(TIM_HandleTypeDef *htim)
@@ -88,16 +88,16 @@ void Set_Encoder(int i)
 		switch(i)
 	{
 		case 0:
-	__HAL_TIM_SET_COUNTER(&htim1,65535);
+	__HAL_TIM_SET_COUNTER(&htim1,35535);
 		break;
 		case 1:
-	__HAL_TIM_SET_COUNTER(&htim2,65535);
+	__HAL_TIM_SET_COUNTER(&htim2,35535);
 		break;
 		case 2:
-	__HAL_TIM_SET_COUNTER(&htim3,65535);
+	__HAL_TIM_SET_COUNTER(&htim3,35535);
 		break;
 		case 3:
-	__HAL_TIM_SET_COUNTER(&htim4,65535);
+	__HAL_TIM_SET_COUNTER(&htim4,35535);
 	}
 }
 
@@ -105,11 +105,11 @@ void Chassis_Solution(pid_t* pid1,pid_t* pid2,pid_t* pid3,pid_t* pid4,float Vx,f
 {
 	//float R=; //
 	float x=PI/4;
-	float k=0.2;
-	pid1->control_speed=(-1)*Vx*cosf(x)+(-1)*Vy*cosf(x)+angle*k;
-	pid2->control_speed=(-1)*Vx*cosf(x)+Vy*cosf(x)+angle*k;
+	float k=0.5;
+	pid1->control_speed=(-1)*Vx*cosf(x)+(-1)*Vy*cosf(x)+(-1)*angle*k;
+	pid2->control_speed=(-1)*Vx*cosf(x)+     Vy*cosf(x)+angle*k;
 	pid3->control_speed=     Vx*cosf(x)+(-1)*Vy*cosf(x)+angle*k;
-	pid4->control_speed=     Vx*cosf(x)+     Vy*cosf(x)+angle*k;
+	pid4->control_speed=     Vx*cosf(x)+     Vy*cosf(x)+(-1)*angle*k;
 	if(pid1->control_speed>2.6)
 		pid1->control_speed=2.6;
 	if(pid1->control_speed<-2.6)
@@ -131,7 +131,7 @@ void Chassis_Solution(pid_t* pid1,pid_t* pid2,pid_t* pid3,pid_t* pid4,float Vx,f
 		pid4->control_speed=-2.6;
 }
 
-float count_speed=2000;
+float count_speed=0;
 float count_data(int data)
 {
 	if((data>1900)&&(data<2200))
@@ -150,5 +150,5 @@ float count_data(int data)
 		else
 			count_speed=(data-1600)/400;
 	}
-  return count_speed*0.5;
+  return count_speed*0.6;
 }

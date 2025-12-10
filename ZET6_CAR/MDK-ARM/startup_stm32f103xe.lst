@@ -554,12 +554,12 @@ ARM Macro Assembler    Page 9
               00000400 
               00000200 
               00000000 
-Command Line: --debug --xref --diag_suppress=9931,A1950W --cpu=Cortex-M3 --depe
-nd=zet6_car\startup_stm32f103xe.d -ozet6_car\startup_stm32f103xe.o -I.\RTE\_ZET
-6_CAR -ID:\Keil_v5\Packs\ARM\CMSIS\6.2.0\CMSIS\Core\Include -ID:\Keil_v5\Packs\
-Keil\STM32F1xx_DFP\2.4.1\Device\Include --predefine="__UVISION_VERSION SETA 539
-" --predefine="_RTE_ SETA 1" --predefine="STM32F10X_HD SETA 1" --predefine="_RT
-E_ SETA 1" --list=startup_stm32f103xe.lst startup_stm32f103xe.s
+Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M3 --apcs=interw
+ork --depend=zet6_car\startup_stm32f103xe.d -ozet6_car\startup_stm32f103xe.o -I
+.\RTE\_ZET6_CAR -ID:\keil\ARM\PACK\ARM\CMSIS\5.4.0\CMSIS\Core\Include -ID:\keil
+\ARM\PACK\Keil\STM32F1xx_DFP\2.3.0\Device\Include --predefine="__UVISION_VERSIO
+N SETA 526" --predefine="_RTE_ SETA 1" --predefine="STM32F10X_HD SETA 1" --list
+=startup_stm32f103xe.lst startup_stm32f103xe.s
 
 
 

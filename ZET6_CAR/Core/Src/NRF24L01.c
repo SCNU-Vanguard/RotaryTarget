@@ -177,12 +177,6 @@
 //        NRF24L01_Write_Reg(FLUSH_RX, 0xff);                    //清除RX FIFO寄存器
 //        return 0;
 //    }
-////		if(sta & 0x02)
-////		{
-////			  NRF24L01_Read_Buf(RD_RX_PLOAD, rxbuf, RX_PLOAD_WIDTH); //读取数据
-////        NRF24L01_Write_Reg(FLUSH_RX, 0x02); 
-////			  return 2;
-////		}
 //        return 1; //没收到任何数据
 //}
 
